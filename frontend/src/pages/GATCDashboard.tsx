@@ -56,15 +56,33 @@ export default function GATCDashboard() {
       });
 
       if (res.ok) {
-        const cert = await res.json();
-        // Append a timestamp query parameter to bypass aggressive browser caching of PDFs
-        window.open(`${import.meta.env.VITE_API_BASE_URL}/static/certificates/${cert.certificate_number}.pdf?t=${Date.now()}`, '_blank');
+        alert("Certificate generated successfully!");
         fetchData();
+        downloadCertificate(appId);
       } else {
         alert("Failed to generate certificate");
       }
     } catch (err) {
       console.error("Failed to generate certificate", err);
+    }
+  };
+
+  const downloadCertificate = async (appId: string) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const res = await fetch(import.meta.env.VITE_API_BASE_URL + `/api/v1/certificates/application/${appId}`, {
+        headers: { 'Authorization': `Bearer ${session.access_token}` }
+      });
+      if (res.ok) {
+        const cert = await res.json();
+        window.open(import.meta.env.VITE_API_BASE_URL + `/static/certificates/${cert.certificate_number}.pdf?t=${Date.now()}`, '_blank');
+      } else {
+        // Fallback to regeneration if it returns 404
+        handleGenerateCertificate(appId);
+      }
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -187,7 +205,7 @@ export default function GATCDashboard() {
                               </button>
                             ) : (
                               <button 
-                                onClick={() => handleGenerateCertificate(app.id)}
+                                onClick={() => app.status === 'certificate_generated' ? downloadCertificate(app.id) : handleGenerateCertificate(app.id)}
                                 className="text-[#004d40] font-bold hover:underline"
                               >
                                 {app.status === 'certificate_generated' ? 'View Certificate' : 'Issue Certificate'}
