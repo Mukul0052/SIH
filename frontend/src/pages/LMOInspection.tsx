@@ -109,7 +109,7 @@ export default function LMOInspection() {
       if (!res.ok) throw new Error('Failed to finalize');
       
       alert('Tests finalized and decision recorded.');
-      navigate('/');
+      navigate('/dashboard');
     } catch (err: any) {
       setError(err.message);
     }
@@ -118,7 +118,7 @@ export default function LMOInspection() {
   return (
     <div className="min-h-screen bg-[#fdf9f4]">
       <header className="bg-white border-b border-[#e6e2dd] px-8 py-4 flex items-center gap-4">
-        <button onClick={() => navigate('/')} className="text-[#50453b] hover:text-[#1c1c19]">← Back</button>
+        <button onClick={() => navigate('/dashboard')} className="text-[#50453b] hover:text-[#1c1c19]">← Back</button>
         <h1 className="text-xl font-bold text-[#004d40]">Inspection & Testing Suite</h1>
       </header>
 
