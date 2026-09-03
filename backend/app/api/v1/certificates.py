@@ -172,7 +172,7 @@ async def generate_certificate(
         status="active",
         signature_payload=sig_payload,
         signature_value="dummy_signature_value",
-        pdf_storage_ref=f"/static/certificates/{pdf_filename}"
+        pdf_storage_ref=f"/{pdf_path.replace(os.sep, '/')}"
     )
     
     app.status = ApplicationStatus.certificate_generated
