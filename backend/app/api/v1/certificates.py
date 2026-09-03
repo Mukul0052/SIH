@@ -204,5 +204,14 @@ async def get_certificate_by_app(
     cert = res.scalar_one_or_none()
     if not cert:
         raise HTTPException(status_code=404, detail="Certificate not found for this application")
+    
+    # Check if the PDF exists on disk (handle ephemeral Render disk wipes)
+    pdf_path = os.path.join(PDF_DIR, f"{cert.certificate_number}.pdf")
+    if not os.path.exists(pdf_path):
+        app_res = await db.execute(select(Application).where(Application.id == app_id))
+        app = app_res.scalar_one_or_none()
+        if app:
+            generate_pdf(cert.certificate_number, cert.qr_token, str(app.id), str(app.applicant_id), pdf_path)
+            
     return cert
 
