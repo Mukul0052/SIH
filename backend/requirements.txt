@@ -13,3 +13,4 @@ slowapi
 apscheduler
 reportlab
 qrcode
+Pillow
