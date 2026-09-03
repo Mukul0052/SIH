@@ -13,4 +13,4 @@ slowapi
 apscheduler
 reportlab
 qrcode
-Pillow
+Pillowpython-dateutil
