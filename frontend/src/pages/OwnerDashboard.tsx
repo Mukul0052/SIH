@@ -55,21 +55,31 @@ export default function OwnerDashboard() {
   const issuedCerts = applications.filter(a => ['approved', 'certificate_generated'].includes(a.status));
 
   const downloadCertificate = async (appId: string) => {
+    const newWindow = window.open('about:blank', '_blank');
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
+      if (!session) {
+        newWindow?.close();
+        return;
+      }
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/certificates/application/${appId}`, {
         headers: { 'Authorization': `Bearer ${session.access_token}` }
       });
       if (res.ok) {
         const cert = await res.json();
-        // Append a timestamp query parameter to bypass aggressive browser caching of PDFs
-        window.open(`${import.meta.env.VITE_API_BASE_URL}/static/certificates/${cert.certificate_number}.pdf?t=${Date.now()}`, '_blank');
+        const pdfUrl = `${import.meta.env.VITE_API_BASE_URL}/static/certificates/${cert.certificate_number}.pdf?t=${Date.now()}`;
+        if (newWindow) {
+          newWindow.location.href = pdfUrl;
+        } else {
+          window.location.href = pdfUrl;
+        }
       } else {
+        newWindow?.close();
         alert("Certificate is not ready yet.");
       }
     } catch (err) {
       console.error(err);
+      newWindow?.close();
     }
   };
 

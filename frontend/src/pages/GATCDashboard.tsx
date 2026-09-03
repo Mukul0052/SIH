@@ -58,7 +58,6 @@ export default function GATCDashboard() {
       if (res.ok) {
         alert("Certificate generated successfully!");
         fetchData();
-        downloadCertificate(appId);
       } else {
         alert("Failed to generate certificate");
       }
@@ -68,21 +67,32 @@ export default function GATCDashboard() {
   };
 
   const downloadCertificate = async (appId: string) => {
+    const newWindow = window.open('about:blank', '_blank');
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
+      if (!session) {
+        newWindow?.close();
+        return;
+      }
       const res = await fetch(import.meta.env.VITE_API_BASE_URL + `/api/v1/certificates/application/${appId}`, {
         headers: { 'Authorization': `Bearer ${session.access_token}` }
       });
       if (res.ok) {
         const cert = await res.json();
-        window.open(import.meta.env.VITE_API_BASE_URL + `/static/certificates/${cert.certificate_number}.pdf?t=${Date.now()}`, '_blank');
+        const pdfUrl = import.meta.env.VITE_API_BASE_URL + `/static/certificates/${cert.certificate_number}.pdf?t=${Date.now()}`;
+        if (newWindow) {
+          newWindow.location.href = pdfUrl;
+        } else {
+          window.location.href = pdfUrl;
+        }
       } else {
+        newWindow?.close();
         // Fallback to regeneration if it returns 404
         handleGenerateCertificate(appId);
       }
     } catch (err) {
       console.error(err);
+      newWindow?.close();
     }
   };
 
